@@ -4,6 +4,10 @@
 
 #ifndef RK2_DATA_H
 #define RK2_DATA_H
+
+#include <utility>
+#include <iostream>
+
 template<typename T>
 class IData{
 protected:
@@ -12,7 +16,7 @@ protected:
     int DataLen;
 public:
     IData(){
-        size = 16;
+        size = 256;
         ar = new T[size];
         DataLen = 0;
     }
@@ -20,26 +24,56 @@ public:
         delete[] ar;
     }
     virtual int AddEl(T element){
-        if(DataLen == size)
-            return -1;
-        ar[DataLen++] = element;
-        return 0;
+     return -2;
     }
     virtual int GetEl(T& element){
-        if(DataLen == 0)
-            return -1;
-        element = ar[--DataLen];
-        return 0;
+       return -2;
+    }
+    virtual bool IsEmpty(){
+        return true;
+    }
+
+    virtual int InsertEl(T element, int position){
+        return -2;
+    }
+
+    virtual int DeleteNode(int position){
+        return -2;
+    }
+
+    virtual  int DeleteList(){
+        return -2;
     }
 };
 
 template<typename T>
 class FILO : public IData<T>{
+public:
+    int AddEl(T element) override{
+        if(IData<T>::DataLen == IData<T>::size)
+            return -1;
+        IData<T>::ar[IData<T>::DataLen++] = element;
+        return 0;
+    }
+
+    int GetEl(T& element) override{
+        if( IData<T>::DataLen == 0)
+            return -1;
+        element =  IData<T>::ar[-- IData<T>::DataLen];
+        return 0;
+    }
 };
 
 template<typename T>
 class FIFO : public IData<T>{
 public:
+    int AddEl(T element) override{
+        if(IData<T>::DataLen == IData<T>::size)
+            return -1;
+        IData<T>::ar[IData<T>::DataLen++] = element;
+        return 0;
+    }
+
     int GetEl(T& element) override{
         if(IData<T>::DataLen == 0)
             return -1;
@@ -49,6 +83,10 @@ public:
         }
         IData<T>::DataLen--;
         return 0;
+    }
+
+    bool IsEmpty() override{
+        return  IData<T>::DataLen == 0;
     }
 };
 
@@ -95,13 +133,14 @@ private:
         l->data = element;
         l->next = nullptr;
         l->prev = nullptr;
-        IData<T>::DataLen++;
+        length++;
         return l;
     }
+    int length = 0;
 public:
     LinkNodes<T> *Head;
-    bool IsEmpty(){
-        if(IData<T>::DataLen == 0)
+    bool IsEmpty() override{
+        if(length == 0)
             return true;
         return false;
     }
@@ -111,14 +150,14 @@ public:
             return 0;
         }
         LinkNodes<T>* p = Head;
-        for (int i = 0; i < IData<T>::DataLen - 1; ++i) {
+        for (int i = 0; i < length - 1; ++i) {
             p = p->next;
         }
         p->next = CreateNode(element);
         return 0;
     }
-    int InsertEl(T element, int position){
-        if (position < 0 || position > IData<T>::DataLen)
+    int InsertEl(T element, int position) override{
+        if (position < 0 || position > length)
             return -1;
         LinkNodes<T>* p = Head;
         for (int i = 0; i < position - 1; ++i) {
@@ -130,8 +169,8 @@ public:
         p->next = l;
         return 0;
     }
-    int DeleteNode(int position){
-        if (position < 0 || position >= IData<T>::DataLen)
+    int DeleteNode(int position) override{
+        if (position < 0 || position >= length)
             return -1;
         LinkNodes<T>* p = Head;
         for (int i = 0; i < position - 1; ++i) {
@@ -139,21 +178,85 @@ public:
         }
         LinkNodes<T>* l = p->next;
         p->next = l->next;
-        IData<T>::DataLen--;
+        length--;
         delete l;
         return 0;
     }
-    int DeleteList(){
-        int a = IData<T>::DataLen;
+    int DeleteList() override{
+        int a = length;
         for (int i = 0; i < a; ++i) {
             LinkNodes<T>* p = Head;
             Head = Head->next;
             delete p;
-            IData<T>::DataLen--;
+            length--;
         }
         return 0;
     }
+
+    T& operator[](int i){
+        LinkNodes<T>* p = Head;
+        for (int j = 0; j < i; ++j) {
+            p = p->next;
+        }
+        return p->data;
+    }
+
+    bool operator ==(LinkedList<T>& lst){
+        if(length != lst.length)
+            return false;
+        int count = 0;
+        LinkNodes<T>* p = Head;
+        for (int i = 0; i < length; ++i) {
+            if(p->data !=lst[i])
+                count++;
+            p = p->next;
+        }
+        if(count != 0)
+            return false;
+        return true;
+    }
+
+    LinkedList<T>& operator=(LinkedList<T>& lst){
+        this->DeleteList();
+        for (int i = 0; i < lst.length; ++i) {
+            this->AddEl(lst[i]);
+        }
+        return *this;
+    }
+
+    void sort(){
+
+    }
+
+//    LinkNodes<T>* GetMin(){
+//        int* ar = new int[this->length];
+//        for (int i = 0; i < this->length; ++i) {
+//            ar[i] = 0;
+//        }
+//        LinkNodes<T>* p = Head;
+//        LinkNodes<T>* min = p;
+//        int g = 0;
+//        while(p!=nullptr){
+//            if(p->data < min->data && ar[g] != 1) {
+//                min = p;
+//                ar[g] = 1;
+//            }
+//            p = p->next;
+//            g++;
+//        }
+//        return min;
+//    }
 };
+
+template<typename T>
+std::ostream& operator<<(std::ostream& os, LinkedList<T>& lst){
+    LinkNodes<T>* p = lst.Head;
+    while(p != nullptr) {
+        os << p->data << std::endl;
+        p = p->next;
+    }
+    return os;
+}
 
 template<typename T>
 class DoubleLinkedList : public IData<T>, LinkNodes<T>{
@@ -169,7 +272,7 @@ private:
 public:
     LinkNodes<T> *Head;
     LinkNodes<T> *Tail;
-    bool IsEmpty(){
+    bool IsEmpty() override{
         if(IData<T>::DataLen == 0)
             return true;
         return false;
@@ -188,7 +291,7 @@ public:
         Tail = p->next;
         return 0;
     }
-    int InsertEl(T element, int position){
+    int InsertEl(T element, int position) override{
         if (position < 0 || position > IData<T>::DataLen)
             return -1;
         LinkNodes<T>* p = Head;
@@ -201,7 +304,7 @@ public:
         p->next = p->next->prev;
         return 0;
     }
-    int DeleteNode(int position){
+    int DeleteNode(int position) override{
         if (position < 0 || position >= IData<T>::DataLen)
             return -1;
         LinkNodes<T>* p = Head;
@@ -215,7 +318,7 @@ public:
         delete l;
         return 0;
     }
-    int DeleteList(){
+    int DeleteList() override{
         int a = IData<T>::DataLen;
         for (int i = 0; i < a; ++i) {
             LinkNodes<T>* p = Head;
