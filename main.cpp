@@ -1,13 +1,16 @@
-#include <iostream>
+
 #include "tasks_rk2.h"
 
-int main() {
-
+void task_1(){
     Graph g;
     g.buildTreeBFS(3);
-    //g.searchBFS(15);
-    for(auto it : g.searchBFS(8).second){
-        std::cout << it << "   ";
-    }
+    g.BFS();
+    g.DFS();
+    g.searchBFS(3);
+    g.searchDFS(13);
+}
+
+int main() {
+    task_1();
     return 0;
 }

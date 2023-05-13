@@ -17,17 +17,16 @@ struct Node {
     Node* parent;
     std::list<Node*> listChilds;
     int name;
+    bool WasHere;
     static int countNodes;
 };
 
 class Graph {
 private :
     Node* head;
-    int Fact(int n);
-    std::vector<bool> discovered;
+    Node* DFSearch(int nameNode);
     FILE* Out = fopen("dfs_res.txt", "w");
     Node *iter;
-    std::list<int> way;
 public :
     Graph();
     Graph(int countNodes);

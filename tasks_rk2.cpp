@@ -2,11 +2,13 @@
 #include <cmath>
 
 Node::Node() {
+    WasHere = false;
     parent = nullptr;
     name = 0;
 }
 
 Node::Node(int nameNode) {
+    WasHere = false;
     parent = nullptr;
     name = nameNode + 1;
 }
@@ -52,19 +54,35 @@ int Graph::buildTreeBFS(int countNodes) {
         }
     }
     iter = head;
-    discovered.resize(100);
     return Node::countNodes;
 }
 
-int Graph::Fact(int n){
-    if(n < 2)
-        return 1;
-    else
-        return n*Fact(n-1);
-}
-
 int Graph::buildTreeDFS(int countNodes){
-    return -1;
+    head = new Node;
+    for (int i = 0; i < countNodes; ++i) {
+        FILO<Node*> st;
+        st.AddEl(head);
+        int n = countNodes;
+        Node *buf;
+        while (!st.IsEmpty()) {
+            st.GetEl(buf);
+            Node *l = buf;
+            if (n <= l->listChilds.size()) {
+                n++;
+                continue;
+            }
+            while (n > l->listChilds.size()) {
+                Node *p = new Node(Node::countNodes++);
+                l->listChilds.push_back(p);
+                p->parent = l;
+                st.AddEl(p);
+                n--;
+                l = p;
+            }
+        }
+    }
+    iter = head;
+    return Node::countNodes;
 }
 
 void Graph::BFS() {
@@ -90,39 +108,43 @@ void Graph::BFS() {
 }
 
 void Graph::DFS() {
-    discovered[iter->name] = true;
+    iter->WasHere = true;
     fprintf(Out, "%d%c", iter->name,' ');
     for(auto it : iter->listChilds){
         iter = it;
-        if(!discovered[it->name]){
+        if(!iter->WasHere){
             DFS();
         }
     }
 }
 
 std::pair<bool, std::list<int>> Graph::searchDFS(int nameNode){
-    discovered[iter->name] = true;
-    way.push_back(iter->name);
-    for(auto it : iter->listChilds){
-        iter = it;
-        if(!discovered[it->name]){
-            searchDFS(nameNode);
-        }
-        if(it->name != nameNode)
-            way.pop_back();
+    Node *target = DFSearch(nameNode);
+    std::list<int> way;
+    if(target == nullptr)
+        return std::make_pair(false, way);
+    while(target!=nullptr){
+        way.push_back(target->name);
+        target = target->parent;
     }
+    std::list<int> trueWay;
+    way.reverse();
     return std::make_pair(true, way);
 }
 
 std::pair<bool, std::list<int>> Graph::searchBFS(int nameNode){
+    bool foundIt = false;
     FIFO<Node*> st;
     Node *iter1 = head;
     st.AddEl(iter1);
     Node *buf;
+    std::list<int> way;
     while(!st.IsEmpty()) {
         st.GetEl(buf);
-        if(buf->name == nameNode)
+        if(buf->name == nameNode) {
+            foundIt = true;
             break;
+        }
         for (auto it: buf->listChilds) {
             st.AddEl(it);
         }
@@ -136,5 +158,25 @@ std::pair<bool, std::list<int>> Graph::searchBFS(int nameNode){
     for(int i = buffer.size()-1; i > -1; i--){
         way.push_back(buffer[i]);
     }
-    return std::make_pair(true, way);
+    return std::make_pair(foundIt, way);
+}
+
+Node* Graph::DFSearch(int nameNode) {
+    FILO<Node*> stack;
+    stack.AddEl(head);
+    Node* buf;
+    while(!stack.IsEmpty()){
+        stack.GetEl(buf);
+        if(buf->WasHere)
+            continue;
+        buf->WasHere = true;
+        if(buf->name == nameNode) {
+            return buf;
+        }
+        for(auto it : buf->listChilds){
+            if(!it->WasHere)
+                stack.AddEl(it);
+        }
+    }
+    return nullptr;
 }

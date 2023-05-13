@@ -44,6 +44,10 @@ public:
     virtual  int DeleteList(){
         return -2;
     }
+
+    virtual int getSize(){
+        return -2;
+    }
 };
 
 template<typename T>
@@ -61,6 +65,14 @@ public:
             return -1;
         element =  IData<T>::ar[-- IData<T>::DataLen];
         return 0;
+    }
+
+    bool IsEmpty() override{
+        return  IData<T>::DataLen == 0;
+    }
+
+    int getSize() override{
+        return IData<T>::DataLen;
     }
 };
 
@@ -87,6 +99,10 @@ public:
 
     bool IsEmpty() override{
         return  IData<T>::DataLen == 0;
+    }
+
+    int getSize() override{
+        return IData<T>::DataLen;
     }
 };
 
